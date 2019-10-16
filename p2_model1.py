@@ -63,7 +63,7 @@ def observationProbability(corpus, labelSeq, labelsCount):
     return observationProb
 
 # bigram viterbi
-def viterbi(corpus, transitionProb, observationProb):
+def viterbi(corpus, transitionProb, observationProb, lambda_=1):
     possibleLabels = [0, 1]
     output = []
     for line in corpus:
@@ -81,16 +81,16 @@ def viterbi(corpus, transitionProb, observationProb):
                 observation = observationProb[(possibleLabels[i], line[1])]
             except KeyError:
                 observation = 1e-20
-            score[i][1] = np.log(transition) + np.log(observation)
+            score[i][1] = lambda_ * np.log(transition) + np.log(observation)
             bptr[i][1] = 0
 
         # iteration
         for t in range(2, n):
             for i in range(2):
                 transition0 = transitionProb[(0, possibleLabels[i])]
-                temp0 = score[0][t-1] + np.log(transition0)
+                temp0 = score[0][t-1] + lambda_ * np.log(transition0)
                 transition1 = transitionProb[(1, possibleLabels[i])]
-                temp1 = score[1][t-1] + np.log(transition1)
+                temp1 = score[1][t-1] + lambda_ * np.log(transition1)
                 maxScore = -1.0
                 maxIndex = -1
                 if temp0 >= temp1:
@@ -144,21 +144,23 @@ if __name__ == "__main__":
     #print(observation)
     
     # output the validation result
-    validationData = getCorpus("./data_release/val.csv")
-    result = viterbi(validationData[0], transition, observation)
-    # outputFile = open('validation-test.csv', 'w')
-    # outputFile.write('idx,label\n')
-    # i = 1
-    # for line in result:
-    #     for j in range(len(line)):
-    #         outputFile.write(str(i)+','+str(line[j])+'\n')
-    #         i += 1
-    # outputFile.close()
+    # validationData = getCorpus("./data_release/val.csv")
+    # l = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0]
+    # for i in l:
+    #     result = viterbi(validationData[0], transition, observation, i)
+    #     outputFile = open('validation-test-%.1f.csv'%i, 'w')
+    #     outputFile.write('idx,label\n')
+    #     i = 1
+    #     for line in result:
+    #         for j in range(len(line)):
+    #             outputFile.write(str(i)+','+str(line[j])+'\n')
+    #             i += 1
+    #     outputFile.close()
 
     # output the test result
     # testData = getTestCorpus("./data_release/test_no_label.csv")
-    # result = viterbi(testData, transition, observation)
-    # outputFile = open('test-result.csv', 'w')
+    # result = viterbi(testData, transition, observation, 0.5)
+    # outputFile = open('test-result-lambda05.csv', 'w')
     # outputFile.write('idx,label\n')
     # i = 1
     # for line in result:
