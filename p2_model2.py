@@ -4,10 +4,11 @@ import ast
 import copy
 from sklearn.linear_model import LogisticRegression
 from sklearn.feature_extraction import DictVectorizer
-from p2_model1 import labelsCount, transitionProbability
+from p2_model1 import labelsCount, transitionProbability, observationProbability
 
-# process file
-# format: sentence, pos_seq, label_seq
+""" Extract data from file
+    return: corpusList, posList, labelList
+"""
 def getCorpus(filename):
     corpus = []
     posSeq = []
@@ -16,28 +17,29 @@ def getCorpus(filename):
         lines = csv.reader(f)
         next(lines)
         for line in lines:
-            # define the start word <s>
             words = line[0].split()
-            newWordLine = ['<s>']
+            newWordLine = []
             for i in range(len(words)):
                 newWordLine.append(words[i])
             corpus.append(newWordLine)
 
-            # define the start pos tag
             pos = ast.literal_eval(line[1])
-            newPosLine = ['None']
+            newPosLine = []
             for i in range(len(pos)):
                 newPosLine.append(pos[i])
             posSeq.append(newPosLine)
 
             # define the label start symbol
             labels = ast.literal_eval(line[2])
-            newLabelLine = [100]
+            newLabelLine = []
             for i in range(len(labels)):
                 newLabelLine.append(labels[i])
             labelSeq.append(newLabelLine)
     return corpus, posSeq, labelSeq
 
+""" Extract test data without label
+    return: corpusList, posList
+"""
 def getTestCorpus(filename):
     corpus = []
     posSeq = []
@@ -45,16 +47,14 @@ def getTestCorpus(filename):
         lines = csv.reader(f)
         next(lines)
         for line in lines:
-            # define the start word <s>
             words = line[0].split()
-            newWordLine = ['<s>']
+            newWordLine = []
             for i in range(len(words)):
                 newWordLine.append(words[i])
             corpus.append(newWordLine)
 
-            # define the start pos tag
             pos = ast.literal_eval(line[1])
-            newPosLine = ['None']
+            newPosLine = []
             for i in range(len(pos)):
                 newPosLine.append(pos[i])
             posSeq.append(newPosLine)
@@ -63,39 +63,116 @@ def getTestCorpus(filename):
 """ features created
         1. current word
         2. current pos tag
-        3. previous pos tag
-        4. following pos tag
+        3. previous pos tag (window=3)
+        4. following pos tag (window=3)
+        5. previous word (window=1)
+        6. following word (window=1)
 """
 def createFeatures(corpus, posList):
     ## feature: previous word's pos tag
     prev_pos = copy.deepcopy(posList)
+    prev_pos2 = copy.deepcopy(posList)
+    prev_pos3 = copy.deepcopy(posList)
     ## feature: next word's pos tag
     next_pos = copy.deepcopy(posList)
+    next_pos2 = copy.deepcopy(posList)
+    next_pos3 = copy.deepcopy(posList)
+    ## feature: previous and next word
+    prev_word = copy.deepcopy(corpus)
+    next_word = copy.deepcopy(corpus)
     ## merge features into list of dicts
     X_features = list()
     for i, sentence in enumerate(corpus):
         prev_pos[i].insert(0, "None")
         prev_pos[i].pop()
-        next_pos[i].pop(0)
+        prev_pos2[i].insert(0, "None")
+        prev_pos2[i].insert(0, "None")
+        prev_pos2[i].pop()
+        prev_pos2[i].pop()
+        prev_pos3[i].insert(0, "None")
+        prev_pos3[i].insert(0, "None")
+        prev_pos3[i].insert(0, "None")
+        prev_pos3[i].pop()
+        prev_pos3[i].pop()
+        prev_pos3[i].pop()
+
         next_pos[i].append("None")
+        next_pos[i].pop(0)
+        next_pos2[i].append("None")
+        next_pos2[i].append("None")
+        next_pos2[i].pop(0)
+        next_pos2[i].pop(0)
+        next_pos3[i].append("None")
+        next_pos3[i].append("None")
+        next_pos3[i].append("None")
+        next_pos3[i].pop(0)
+        next_pos3[i].pop(0)
+        next_pos3[i].pop(0)
+
+
+        prev_word[i].insert(0, "Start")
+        prev_word[i].pop()
+        next_word[i].append("End")
+        next_word[i].pop(0)
         for j, word in enumerate(sentence):
             feature = dict()
             feature["word"] = word
             feature["pos"] = posList[i][j]
             feature["prev_pos"] = prev_pos[i][j]
             feature["next_pos"] = next_pos[i][j]
+            feature["prev_pos2"] = prev_pos2[i][j]
+            feature["next_pos2"] = next_pos2[i][j]
+            feature["prev_pos3"] = prev_pos3[i][j]
+            feature["next_pos3"] = next_pos3[i][j]
+            feature["prev_word"] = prev_word[i][j]
+            feature["next_word"] = next_word[i][j]
             X_features.append(feature)
     return X_features
 
+""" Similar to createFeatures, this one only process a line
+"""
 def createFeaturesForLine(line, posList):
     ## feature: previous word's pos tag
     prev_pos = posList.copy()
     prev_pos.insert(0, "None")
     prev_pos.pop()
+    prev_pos2 = posList.copy()
+    prev_pos2.insert(0, "None")
+    prev_pos2.insert(0, "None")
+    prev_pos2.pop()
+    prev_pos2.pop()
+    prev_pos3 = posList.copy()
+    prev_pos3.insert(0, "None")
+    prev_pos3.insert(0, "None")
+    prev_pos3.insert(0, "None")
+    prev_pos3.pop()
+    prev_pos3.pop()
+    prev_pos3.pop()
+
     ## feature: next word's pos tag
     next_pos = posList.copy()
     next_pos.pop(0)
     next_pos.append("None")
+    next_pos2 = posList.copy()
+    next_pos2.append("None")
+    next_pos2.append("None")
+    next_pos2.pop(0)
+    next_pos2.pop(0)
+    next_pos3 = posList.copy()
+    next_pos3.append("None")
+    next_pos3.append("None")
+    next_pos3.append("None")
+    next_pos3.pop(0)
+    next_pos3.pop(0)
+    next_pos3.pop(0)
+
+
+    prev_word = line.copy()
+    prev_word.insert(0, "Start")
+    prev_word.pop()
+    next_word = line.copy()
+    next_word.append("End")
+    next_word.pop(0)
     ## merge features into list
     X_features = list()
     for i, word in enumerate(line):
@@ -104,11 +181,17 @@ def createFeaturesForLine(line, posList):
         feature["pos"] = posList[i]
         feature["prev_pos"] = prev_pos[i]
         feature["next_pos"] = next_pos[i]
+        feature["prev_pos2"] = prev_pos2[i]
+        feature["next_pos2"] = next_pos2[i]
+        feature["prev_pos3"] = prev_pos3[i]
+        feature["next_pos3"] = next_pos3[i]
+        feature["prev_word"] = prev_word[i]
+        feature["next_word"] = next_word[i]
         X_features.append(feature)
     return X_features
 
 # bigram viterbi
-def viterbi(corpus, posList, clf, vector):
+def viterbi(corpus, posList, clf, vector, observationProb):
     possibleLabels = [0, 1]
     output = []
     for i, line in enumerate(corpus):
@@ -123,27 +206,36 @@ def viterbi(corpus, posList, clf, vector):
         X_trans = vector.transform(X_features)
 
         ## generate probabilities for all labels
-        observation = clf.predict_log_proba(X_trans)
+        label_prob = clf.predict_log_proba(X_trans)
 
         ## initialization
         for j in range(2):
-            # transition = transitionProb[(100, possibleLabels[j])]
-            score[j][0] = observation[0][j]
+            try:
+                observation = observationProb[(possibleLabels[j], line[0])]
+            except KeyError:
+                observation = 1e-20
+            observation = np.log(observation)
+
+            score[j][0] = label_prob[0][j] + observation
             bptr[j][0] = 0
 
         ## iteration
         for t in range(1,n):
             for j in range(2):
                 ## calculate max score
-                # transition0 = transitionProb[(0, possibleLabels[j])]
-                # transition1 = transitionProb[(1, possibleLabels[j])]
-                s1 = score[0][t-1] + observation[t][j]
-                s2 = score[1][t-1] + observation[t][j]
+                s1 = score[0][t-1] + label_prob[t][j]
+                s2 = score[1][t-1] + label_prob[t][j]
+                try:
+                    observation = observationProb[(possibleLabels[j], line[t])]
+                except KeyError:
+                    observation = 1e-20
+                observation = np.log(observation)
+
                 if s1 >= s2:
-                    score[j][t] = s1
+                    score[j][t] = s1 + observation
                     bptr[j][t] = 0
                 else:
-                    score[j][t] = s2
+                    score[j][t] = s2 + observation
                     bptr[j][t] = 1
 
         ## identify sequence
@@ -151,7 +243,7 @@ def viterbi(corpus, posList, clf, vector):
         clf_labels[n-1] = 0 if score[0][n-1] > score[1][n-1] else 1
         for j in range(n-2, 0, -1):
             clf_labels[j] = bptr[clf_labels[j+1]][j+1]
-        output.append(clf_labels[1:].tolist())
+        output.append(clf_labels.tolist())
     return output
 
 
@@ -164,10 +256,12 @@ if __name__ == "__main__":
     ## create features for training data
     X_train = createFeatures(corpus, posList)
     Y_train = [y for line in labelList for y in line]
-    # transition = transitionProbability(labelList, labelsCount(labelList))
+
+    ## observation probabilty from model 1
+    observation = observationProbability(corpus, labelList, labelsCount(labelList))
 
     ## use logistic regression model
-    model = LogisticRegression()
+    model = LogisticRegression(multi_class='auto')
 
     ## use dictvectorizer to transform features
     vector = DictVectorizer(sparse=False)
@@ -175,22 +269,19 @@ if __name__ == "__main__":
 
     ## train model
     clf = model.fit(X_train_trans, Y_train)
-    print("labels:", clf.classes_)
-    # l = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0]
-    # for i in l:
-    #     print("lambda =", i)
+
     ## use viterbi to get predictions on validation set
-    predictions = viterbi(validationData[0], validationData[1], clf, vector)
+    predictions = viterbi(validationData[0], validationData[1], clf, vector, observation)
 
     ## compare with actual labels
     true_res = np.array(validationData[2])
     pred_res = np.array(predictions)
+
     print(labelsCount(true_res.tolist()))
     print(labelsCount(pred_res.tolist()))
-    # num_correct = compare(true_res, pred_res)
-    # print("%d / %d = %f" %(num_correct, 38628, num_correct/38628))
 
-    outputFile = open('validation-test-m3.csv', 'w')
+    ## output validation result to csv
+    outputFile = open('validation-test-m2.csv', 'w')
     outputFile.write('idx,label\n')
     i = 1
     for line in predictions:
@@ -199,13 +290,13 @@ if __name__ == "__main__":
             i += 1
     outputFile.close()
 
-    # # output the test result to csv
-    # result = viterbi(testData[0], testData[1], clf, vector)
-    # outputFile = open('test-result-m2.csv', 'w')
-    # outputFile.write('idx,label\n')
-    # i = 1
-    # for line in result:
-    #     for j in range(len(line)):
-    #         outputFile.write(str(i)+','+str(line[j])+'\n')
-    #         i += 1
-    # outputFile.close()
+    # output test result to csv
+    result = viterbi(testData[0], testData[1], clf, vector, observation)
+    outputFile = open('test-result-m2.csv', 'w')
+    outputFile.write('idx,label\n')
+    i = 1
+    for line in result:
+        for j in range(len(line)):
+            outputFile.write(str(i)+','+str(line[j])+'\n')
+            i += 1
+    outputFile.close()
