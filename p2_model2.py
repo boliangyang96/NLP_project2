@@ -137,13 +137,13 @@ def viterbi(corpus, posList, clf, vector):
                 ## calculate max score
                 # transition0 = transitionProb[(0, possibleLabels[j])]
                 # transition1 = transitionProb[(1, possibleLabels[j])]
-                s1 = score[0][t-1]
-                s2 = score[1][t-1]
-                if s1 > s2:
-                    score[j][t] = s1 * observation[t][0]
+                s1 = score[0][t-1] + observation[t][j]
+                s2 = score[1][t-1] + observation[t][j]
+                if s1 >= s2:
+                    score[j][t] = s1
                     bptr[j][t] = 0
                 else:
-                    score[j][t] = s2 * observation[t][1]
+                    score[j][t] = s2
                     bptr[j][t] = 1
 
         ## identify sequence
@@ -190,7 +190,7 @@ if __name__ == "__main__":
     # num_correct = compare(true_res, pred_res)
     # print("%d / %d = %f" %(num_correct, 38628, num_correct/38628))
 
-    outputFile = open('validation-test-m2.csv', 'w')
+    outputFile = open('validation-test-m3.csv', 'w')
     outputFile.write('idx,label\n')
     i = 1
     for line in predictions:
