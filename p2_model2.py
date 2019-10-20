@@ -77,6 +77,7 @@ def createFeatures(corpus, posList):
     pos_prev_feature.append(prev_pos)
     # pos_prev_feature.append(prev_pos2)
     # pos_prev_feature.append(prev_pos3)
+
     ## feature: next word's pos tag
     pos_next_feature = list()
     next_pos = copy.deepcopy(posList)
@@ -85,22 +86,21 @@ def createFeatures(corpus, posList):
     pos_next_feature.append(next_pos)
     # pos_next_feature.append(next_pos2)
     # pos_next_feature.append(next_pos3)
+
     ## feature: previous word
     word_prev_feature = list()
     prev_word = copy.deepcopy(corpus)
     prev_word2 = copy.deepcopy(corpus)
     prev_word2 = copy.deepcopy(corpus)
     word_prev_feature.append(prev_word)
-    # word_prev_feature.append(prev_word2)
-    # word_prev_feature.append(prev_word3)
+
     ## feature: next word
     word_next_feature = list()
     next_word = copy.deepcopy(corpus)
     next_word2 = copy.deepcopy(corpus)
     next_word3 = copy.deepcopy(corpus)
     word_next_feature.append(next_word)
-    # word_next_feature.append(next_word2)
-    # word_next_feature.append(next_word3)
+
     ## merge features into list of dicts
     X_features = list()
     for i, sentence in enumerate(corpus):
@@ -124,7 +124,7 @@ def createFeatures(corpus, posList):
                 f_list[i].append("End")
                 f_list[i].pop(0)
 
-
+        ## merge features
         for j, word in enumerate(sentence):
             feature = dict()
             feature["word"] = word
@@ -155,6 +155,7 @@ def createFeaturesForLine(line, posList):
         for m in range(n+1):
             f_list.insert(0, "None")
             f_list.pop()
+
     # feature: next word's pos tag
     pos_next_feature = list()
     next_pos = copy.deepcopy(posList)
@@ -167,6 +168,7 @@ def createFeaturesForLine(line, posList):
         for m in range(n+1):
             f_list.append("None")
             f_list.pop(0)
+
     # feature: previous word
     word_prev_feature = list()
     prev_word = copy.deepcopy(line)
@@ -177,6 +179,7 @@ def createFeaturesForLine(line, posList):
         for m in range(n+1):
             f_list.insert(0, "Start")
             f_list.pop()
+
     # feature: next word
     word_next_feature = list()
     next_word = copy.deepcopy(line)
