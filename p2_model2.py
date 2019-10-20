@@ -1,6 +1,7 @@
 import csv
 import numpy as np
 import ast
+import copy
 from sklearn.linear_model import LogisticRegression
 from sklearn.feature_extraction import DictVectorizer
 from p2_model1 import labelsCount, transitionProbability
@@ -67,9 +68,9 @@ def getTestCorpus(filename):
 """
 def createFeatures(corpus, posList):
     ## feature: previous word's pos tag
-    prev_pos = posList.copy()
+    prev_pos = copy.deepcopy(posList)
     ## feature: next word's pos tag
-    next_pos = posList.copy()
+    next_pos = copy.deepcopy(posList)
     ## merge features into list of dicts
     X_features = list()
     for i, sentence in enumerate(corpus):
@@ -82,7 +83,7 @@ def createFeatures(corpus, posList):
             feature["word"] = word
             feature["pos"] = posList[i][j]
             feature["prev_pos"] = prev_pos[i][j]
-            # feature["next_pos"] = next_pos[i][j]
+            feature["next_pos"] = next_pos[i][j]
             X_features.append(feature)
     return X_features
 
@@ -102,7 +103,7 @@ def createFeaturesForLine(line, posList):
         feature["word"] = word
         feature["pos"] = posList[i]
         feature["prev_pos"] = prev_pos[i]
-        # feature["next_pos"] = next_pos[i]
+        feature["next_pos"] = next_pos[i]
         X_features.append(feature)
     return X_features
 
@@ -122,7 +123,7 @@ def viterbi(corpus, posList, clf, vector):
         X_trans = vector.transform(X_features)
 
         ## generate probabilities for all labels
-        observation = clf.predict_proba(X_trans)
+        observation = clf.predict_log_proba(X_trans)
 
         ## initialization
         for j in range(2):
@@ -174,7 +175,7 @@ if __name__ == "__main__":
 
     ## train model
     clf = model.fit(X_train_trans, Y_train)
-
+    print("labels:", clf.classes_)
     # l = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0]
     # for i in l:
     #     print("lambda =", i)
