@@ -4,7 +4,7 @@ import ast
 import copy
 from sklearn.linear_model import LogisticRegression
 from sklearn.feature_extraction import DictVectorizer
-from p2_model1 import labelsCount, transitionProbability, observationProbability
+from p2_model1 import labelsCount, observationProbability
 
 """ Extract data from file
     return: corpusList, posList, labelList
@@ -70,60 +70,71 @@ def getTestCorpus(filename):
 """
 def createFeatures(corpus, posList):
     ## feature: previous word's pos tag
+    pos_prev_feature = list()
     prev_pos = copy.deepcopy(posList)
     prev_pos2 = copy.deepcopy(posList)
     prev_pos3 = copy.deepcopy(posList)
+    pos_prev_feature.append(prev_pos)
+    # pos_prev_feature.append(prev_pos2)
+    # pos_prev_feature.append(prev_pos3)
     ## feature: next word's pos tag
+    pos_next_feature = list()
     next_pos = copy.deepcopy(posList)
     next_pos2 = copy.deepcopy(posList)
     next_pos3 = copy.deepcopy(posList)
-    ## feature: previous and next word
+    pos_next_feature.append(next_pos)
+    # pos_next_feature.append(next_pos2)
+    # pos_next_feature.append(next_pos3)
+    ## feature: previous word
+    word_prev_feature = list()
     prev_word = copy.deepcopy(corpus)
+    prev_word2 = copy.deepcopy(corpus)
+    prev_word2 = copy.deepcopy(corpus)
+    word_prev_feature.append(prev_word)
+    # word_prev_feature.append(prev_word2)
+    # word_prev_feature.append(prev_word3)
+    ## feature: next word
+    word_next_feature = list()
     next_word = copy.deepcopy(corpus)
+    next_word2 = copy.deepcopy(corpus)
+    next_word3 = copy.deepcopy(corpus)
+    word_next_feature.append(next_word)
+    # word_next_feature.append(next_word2)
+    # word_next_feature.append(next_word3)
     ## merge features into list of dicts
     X_features = list()
     for i, sentence in enumerate(corpus):
-        prev_pos[i].insert(0, "None")
-        prev_pos[i].pop()
-        prev_pos2[i].insert(0, "None")
-        prev_pos2[i].insert(0, "None")
-        prev_pos2[i].pop()
-        prev_pos2[i].pop()
-        prev_pos3[i].insert(0, "None")
-        prev_pos3[i].insert(0, "None")
-        prev_pos3[i].insert(0, "None")
-        prev_pos3[i].pop()
-        prev_pos3[i].pop()
-        prev_pos3[i].pop()
+        for n, f_list in enumerate(pos_prev_feature):
+            for m in range(n+1):
+                f_list[i].insert(0, "None")
+                f_list[i].pop()
 
-        next_pos[i].append("None")
-        next_pos[i].pop(0)
-        next_pos2[i].append("None")
-        next_pos2[i].append("None")
-        next_pos2[i].pop(0)
-        next_pos2[i].pop(0)
-        next_pos3[i].append("None")
-        next_pos3[i].append("None")
-        next_pos3[i].append("None")
-        next_pos3[i].pop(0)
-        next_pos3[i].pop(0)
-        next_pos3[i].pop(0)
+        for n, f_list in enumerate(pos_next_feature):
+            for m in range(n+1):
+                f_list[i].append("None")
+                f_list[i].pop(0)
+
+        for n, f_list in enumerate(word_prev_feature):
+            for m in range(n+1):
+                f_list[i].insert(0, "Start")
+                f_list[i].pop()
+
+        for n, f_list in enumerate(word_next_feature):
+            for m in range(n+1):
+                f_list[i].append("End")
+                f_list[i].pop(0)
 
 
-        prev_word[i].insert(0, "Start")
-        prev_word[i].pop()
-        next_word[i].append("End")
-        next_word[i].pop(0)
         for j, word in enumerate(sentence):
             feature = dict()
             feature["word"] = word
             feature["pos"] = posList[i][j]
             feature["prev_pos"] = prev_pos[i][j]
             feature["next_pos"] = next_pos[i][j]
-            feature["prev_pos2"] = prev_pos2[i][j]
-            feature["next_pos2"] = next_pos2[i][j]
-            feature["prev_pos3"] = prev_pos3[i][j]
-            feature["next_pos3"] = next_pos3[i][j]
+            # feature["prev_pos2"] = prev_pos2[i][j]
+            # feature["next_pos2"] = next_pos2[i][j]
+            # feature["prev_pos3"] = prev_pos3[i][j]
+            # feature["next_pos3"] = next_pos3[i][j]
             feature["prev_word"] = prev_word[i][j]
             feature["next_word"] = next_word[i][j]
             X_features.append(feature)
@@ -133,46 +144,50 @@ def createFeatures(corpus, posList):
 """
 def createFeaturesForLine(line, posList):
     ## feature: previous word's pos tag
-    prev_pos = posList.copy()
-    prev_pos.insert(0, "None")
-    prev_pos.pop()
-    prev_pos2 = posList.copy()
-    prev_pos2.insert(0, "None")
-    prev_pos2.insert(0, "None")
-    prev_pos2.pop()
-    prev_pos2.pop()
-    prev_pos3 = posList.copy()
-    prev_pos3.insert(0, "None")
-    prev_pos3.insert(0, "None")
-    prev_pos3.insert(0, "None")
-    prev_pos3.pop()
-    prev_pos3.pop()
-    prev_pos3.pop()
+    pos_prev_feature = list()
+    prev_pos = copy.deepcopy(posList)
+    prev_pos2 = copy.deepcopy(posList)
+    prev_pos3 = copy.deepcopy(posList)
+    pos_prev_feature.append(prev_pos)
+    # pos_prev_feature.append(prev_pos2)
+    # pos_prev_feature.append(prev_pos3)
+    for n, f_list in enumerate(pos_prev_feature):
+        for m in range(n+1):
+            f_list.insert(0, "None")
+            f_list.pop()
+    # feature: next word's pos tag
+    pos_next_feature = list()
+    next_pos = copy.deepcopy(posList)
+    next_pos2 = copy.deepcopy(posList)
+    next_pos3 = copy.deepcopy(posList)
+    pos_next_feature.append(next_pos)
+    # pos_next_feature.append(next_pos2)
+    # pos_next_feature.append(next_pos3)
+    for n, f_list in enumerate(pos_next_feature):
+        for m in range(n+1):
+            f_list.append("None")
+            f_list.pop(0)
+    # feature: previous word
+    word_prev_feature = list()
+    prev_word = copy.deepcopy(line)
+    prev_word2 = copy.deepcopy(line)
+    prev_word2 = copy.deepcopy(line)
+    word_prev_feature.append(prev_word)
+    for n, f_list in enumerate(word_prev_feature):
+        for m in range(n+1):
+            f_list.insert(0, "Start")
+            f_list.pop()
+    # feature: next word
+    word_next_feature = list()
+    next_word = copy.deepcopy(line)
+    next_word2 = copy.deepcopy(line)
+    next_word3 = copy.deepcopy(line)
+    word_next_feature.append(next_word)
+    for n, f_list in enumerate(word_next_feature):
+        for m in range(n+1):
+            f_list.append("End")
+            f_list.pop(0)
 
-    ## feature: next word's pos tag
-    next_pos = posList.copy()
-    next_pos.pop(0)
-    next_pos.append("None")
-    next_pos2 = posList.copy()
-    next_pos2.append("None")
-    next_pos2.append("None")
-    next_pos2.pop(0)
-    next_pos2.pop(0)
-    next_pos3 = posList.copy()
-    next_pos3.append("None")
-    next_pos3.append("None")
-    next_pos3.append("None")
-    next_pos3.pop(0)
-    next_pos3.pop(0)
-    next_pos3.pop(0)
-
-
-    prev_word = line.copy()
-    prev_word.insert(0, "Start")
-    prev_word.pop()
-    next_word = line.copy()
-    next_word.append("End")
-    next_word.pop(0)
     ## merge features into list
     X_features = list()
     for i, word in enumerate(line):
@@ -181,10 +196,10 @@ def createFeaturesForLine(line, posList):
         feature["pos"] = posList[i]
         feature["prev_pos"] = prev_pos[i]
         feature["next_pos"] = next_pos[i]
-        feature["prev_pos2"] = prev_pos2[i]
-        feature["next_pos2"] = next_pos2[i]
-        feature["prev_pos3"] = prev_pos3[i]
-        feature["next_pos3"] = next_pos3[i]
+        # feature["prev_pos2"] = prev_pos2[i]
+        # feature["next_pos2"] = next_pos2[i]
+        # feature["prev_pos3"] = prev_pos3[i]
+        # feature["next_pos3"] = next_pos3[i]
         feature["prev_word"] = prev_word[i]
         feature["next_word"] = next_word[i]
         X_features.append(feature)
